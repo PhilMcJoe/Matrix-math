@@ -168,8 +168,7 @@ export default function MathGame() {
               score: newScore 
             }, 
             { 
-              onConflict: 'user_id',
-              update: ['score']
+              onConflict: 'user_id'
             }
           );
 
