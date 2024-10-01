@@ -48,44 +48,15 @@ export default function ProtectedPage() {
       if (!user) {
         router.push('/login');
       } else {
-        setLoading(false);
+        router.push('/dashboard');  // Redirect to dashboard instead of showing content
       }
     };
     checkUser();
   }, [router, supabase]);
 
-  const startGame = () => {
-    router.push('/game');
-  };
-
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    router.push('/');
-  };
-
   if (loading) {
     return <div>Loading...</div>;
   }
 
-  return (
-    <div className="relative flex flex-col items-center justify-center min-h-screen bg-black text-green-500 font-mono overflow-hidden">
-      <MatrixRain />
-      <div className="z-10 text-center">
-        <h1 className="text-6xl font-bold mb-8 animate-pulse">Welcome to the Matrix</h1>
-        <p className="text-xl mb-8">Are you ready to test your math skills?</p>
-        <button
-          onClick={startGame}
-          className="px-8 py-4 text-2xl font-bold text-black bg-green-500 rounded-lg hover:bg-green-600 transition-colors transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-300"
-        >
-          Start Game
-        </button>
-      </div>
-      <button
-        onClick={handleSignOut}
-        className="absolute top-4 right-4 text-green-500 hover:text-green-400"
-      >
-        Sign Out
-      </button>
-    </div>
-  );
+  return null;  // This component no longer renders anything
 }
