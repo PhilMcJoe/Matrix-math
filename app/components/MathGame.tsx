@@ -132,10 +132,10 @@ export default function MathGame() {
     if (user) {
       console.log('Updating high score for user:', user.id);
       
-      // Fetch the current username and high score from the leaderboard
+      // Fetch the current username from the leaderboard
       const { data: userData, error: usernameError } = await supabase
         .from('leaderboard')
-        .select('username, score')
+        .select('username')
         .eq('user_id', user.id)
         .single();
 
@@ -145,31 +145,19 @@ export default function MathGame() {
       }
 
       const currentUsername = userData?.username || user.email;
-      const currentHighScore = userData?.score || 0;
 
-      // Only update if the new score is higher
-      if (newScore > currentHighScore) {
-        // Update high_scores table
-        const { error: highScoreError } = await supabase
-          .from('high_scores')
-          .upsert({ user_id: user.id, score: newScore }, { onConflict: 'user_id' });
+      // Update both high_scores and leaderboard tables in a single operation
+      const { error: updateError } = await supabase.rpc('update_score', {
+        p_user_id: user.id,
+        p_username: currentUsername,
+        p_score: newScore
+      });
 
-        if (highScoreError) {
-          console.error('Error updating high score:', highScoreError);
-        }
-
-        // Update leaderboard table
-        const { error: leaderboardError } = await supabase
-          .from('leaderboard')
-          .upsert({ user_id: user.id, username: currentUsername, score: newScore }, { onConflict: 'user_id' });
-
-        if (leaderboardError) {
-          console.error('Error updating leaderboard:', leaderboardError);
-        }
-
-        console.log('High score updated to:', newScore);
+      if (updateError) {
+        console.error('Error updating score:', updateError);
       } else {
-        console.log('Score not high enough to update:', newScore);
+        console.log('Score updated successfully');
+        setHighScore(newScore);
       }
     }
   };
