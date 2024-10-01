@@ -12,7 +12,6 @@ interface Question {
   operation: Operation;
 }
 
-
 export default function MathGame() {
   const [score, setScore] = useState(0);
   const [highScore, setHighScore] = useState(0);
@@ -36,6 +35,13 @@ export default function MathGame() {
       if (timerRef.current) clearInterval(timerRef.current);
     };
   }, []);
+
+  useEffect(() => {
+    if (timer <= 0) {
+      setGameOver(true);
+      updateHighScore(score);
+    }
+  }, [timer]);
 
   const fetchHighScore = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -130,34 +136,56 @@ export default function MathGame() {
   const updateHighScore = async (newScore: number) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
-      console.log('Updating high score for user:', user.id);
-      
-      // Fetch the current username from the leaderboard
-      const { data: userData, error: usernameError } = await supabase
+      console.log('Checking high score for user:', user.id);
+
+      // Fetch the current high score and username
+      const { data: userData, error: userDataError } = await supabase
         .from('leaderboard')
-        .select('username')
+        .select('username, score')
         .eq('user_id', user.id)
         .single();
 
-      if (usernameError) {
-        console.error('Error fetching user data:', usernameError);
+      if (userDataError) {
+        console.error('Error fetching user data:', userDataError);
         return;
       }
 
       const currentUsername = userData?.username || user.email;
+      const currentHighScore = userData?.score || 0;
 
-      // Update both high_scores and leaderboard tables in a single operation
-      const { error: updateError } = await supabase.rpc('update_score', {
-        p_user_id: user.id,
-        p_username: currentUsername,
-        p_score: newScore
-      });
+      // Only update if the new score is higher
+      if (newScore > currentHighScore) {
+        console.log('New high score achieved:', newScore);
 
-      if (updateError) {
-        console.error('Error updating score:', updateError);
-      } else {
-        console.log('Score updated successfully');
+        // Update high_scores table
+        const { error: highScoreError } = await supabase
+          .from('high_scores')
+          .upsert({ user_id: user.id, score: newScore }, { onConflict: 'user_id' });
+
+        if (highScoreError) {
+          console.error('Error updating high score:', highScoreError);
+        }
+
+        // Update leaderboard table
+        const { error: leaderboardError } = await supabase
+          .from('leaderboard')
+          .upsert(
+            { 
+              user_id: user.id, 
+              username: currentUsername, 
+              score: newScore 
+            }, 
+            { onConflict: 'user_id' }
+          );
+
+        if (leaderboardError) {
+          console.error('Error updating leaderboard:', leaderboardError);
+        }
+
         setHighScore(newScore);
+        console.log('High score and leaderboard updated');
+      } else {
+        console.log('Score not high enough to update');
       }
     }
   };
