@@ -207,24 +207,28 @@ export default function Dashboard() {
         <div className="mb-8">
           <h2 className="text-2xl font-bold mb-4 text-center">Leaderboard</h2>
           {leaderboard.length > 0 ? (
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="border-b border-green-500">
-                  <th className="px-2 py-1 text-left">Rank</th>
-                  <th className="px-2 py-1 text-left">User</th>
-                  <th className="px-2 py-1 text-right">Score</th>
-                </tr>
-              </thead>
-              <tbody>
-                {leaderboard.map((entry, index) => (
-                  <tr key={index} className="border-b border-green-500 border-opacity-50">
-                    <td className="px-2 py-1">{index + 1}</td>
-                    <td className="px-2 py-1 truncate max-w-[150px]">{entry.username}</td>
-                    <td className="px-2 py-1 text-right">{entry.score}</td>
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="border-b border-green-500">
+                    <th className="px-2 py-1 text-left w-16">Rank</th>
+                    <th className="px-2 py-1 text-left">User</th>
+                    <th className="px-2 py-1 text-right w-24">Score</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {leaderboard.map((entry, index) => (
+                    <tr key={index} className="border-b border-green-500 border-opacity-50">
+                      <td className="px-2 py-1 w-16">{index + 1}</td>
+                      <td className="px-2 py-1">
+                        <div className="truncate max-w-[200px]">{entry.username}</div>
+                      </td>
+                      <td className="px-2 py-1 text-right w-24">{entry.score}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           ) : (
             <p className="text-center">No leaderboard data available.</p>
           )}
