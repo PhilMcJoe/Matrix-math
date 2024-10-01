@@ -161,16 +161,7 @@ export default function MathGame() {
         // Update leaderboard table
         const { error: leaderboardError } = await supabase
           .from('leaderboard')
-          .upsert(
-            { 
-              user_id: user.id, 
-              username: currentUsername, 
-              score: newScore 
-            }, 
-            { 
-              onConflict: 'user_id'
-            }
-          );
+          .upsert({ user_id: user.id, username: currentUsername, score: newScore }, { onConflict: 'user_id' });
 
         if (leaderboardError) {
           console.error('Error updating leaderboard:', leaderboardError);
